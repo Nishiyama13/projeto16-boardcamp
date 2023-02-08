@@ -1,12 +1,13 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
+import express from 'express';
+import cors from "cors";
+import dotenv from "dotenv";
 
-const { Pool } = pg;
+dotenv.config();
 
-const configDatabase = {
-    connectionString: process.env.DADATABASE_URL
-}
+const server = express();
 
-if(process.env.MODE === 'prod') configDatabase.ssl = true;
+server.use(express.json());
+server.use(cors());
 
-export const db = new Pool(configDatabase);
+const port = process.env.PORT || 5500;
+server.listen(port, ()=> {console.log(`Servidor conectado a porta ${port}`)});
