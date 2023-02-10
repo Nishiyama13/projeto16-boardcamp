@@ -2,12 +2,14 @@ import pg from 'pg';
 import dotenv from 'dotenv';
 //use npm run dev
 
-const { Pool } = pg;
+dotenv.config();
+
+const { Pool } = pg; //abre o túnel de conexão entre o pg e o node
 
 const configDatabase = {
-    connectionString: process.env.DADATABASE_URL
+    connectionString: process.env.DATABASE_URL,
 }
 
 if(process.env.MODE === 'prod') configDatabase.ssl = true;
 
-export const db = new Pool(configDatabase);
+export const db = new Pool(configDatabase); //exporta a conexão pela var db
