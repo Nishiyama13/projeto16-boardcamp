@@ -14,5 +14,5 @@ server.use(cors());
 server.use(router);
 //server.use([gamesRouter]);
 
-const port = process.env.PORT || 5500 || 6700;
+const port = process.env.PORT;
 server.listen(port, ()=> {console.log(`Servidor conectado a porta ${port}`)});

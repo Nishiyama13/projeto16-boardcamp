@@ -9,13 +9,10 @@ export async function findAllGames (req,res) {
         res.status(500).send(error.message);
     }
 }
-//SELECT * FROM games ORDER BY name DESC
 
-export async function creatNewGame (req,res) {
-    const {name, image, stockTotal, pricePerDay } = req.body;
+export async function createNewGame (req,res) {
+    const { name, image, stockTotal, pricePerDay } = req.body;
     try{
-       
-
         const checkExistingGame = await db.query(
             `SELECT * FROM games WHERE name = $1`, [name]
         );
@@ -24,7 +21,7 @@ export async function creatNewGame (req,res) {
             return res.status(409).send("Jogo já cadastrado")
         };
 
-        const games = await db.query(`INSERT INTO games(name, image, stockTotal, pricePerDay) VALUES ($1, $2, $3, $4) RETURNING *`, [name, image, stockTotal, pricePerDay]);
+        const games = await db.query(`INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4) RETURNING *`, [name, image, stockTotal, pricePerDay]);
 
         console.log(games.rows[0]);
 
