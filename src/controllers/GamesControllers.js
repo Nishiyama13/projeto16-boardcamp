@@ -12,7 +12,12 @@ export async function findAllGames (req,res) {
 
 export async function createNewGame (req,res) {
     const { name, image, stockTotal, pricePerDay } = req.body;
+    if(!name || !image || !stockTotal || !pricePerDay){
+        return res.status(400).send("Os campos obrigatórios devem ser preenchidos")
+    }
+
     try{
+        
         const checkExistingGame = await db.query(
             `SELECT * FROM games WHERE name = $1`, [name]
         );
@@ -30,7 +35,7 @@ export async function createNewGame (req,res) {
 
     }catch(error){
         console.log(error);
-        res.status(400).send(error.message);
+        res.status(500).send(error.message);
     }
 }
 
