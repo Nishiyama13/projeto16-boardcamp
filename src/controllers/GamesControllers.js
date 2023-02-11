@@ -18,7 +18,7 @@ export async function createNewGame (req,res) {
         );
         
         if(checkExistingGame.rows.length > 0){
-            return res.status(400).send("Jogo já cadastrado")
+            return res.status(409).send("Jogo já cadastrado")
         };
 
         const games = await db.query(`INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4) RETURNING *`, [name, image, stockTotal, pricePerDay]);
@@ -30,7 +30,7 @@ export async function createNewGame (req,res) {
 
     }catch(error){
         console.log(error);
-        res.status(500).send(error.message);
+        res.status(400).send(error.message);
     }
 }
 
