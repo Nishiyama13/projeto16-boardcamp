@@ -11,15 +11,23 @@ export async function findAllCustomers (req,res) {
 }
 
 export async function findCustomersById (req,res){
-    try{
+    const { id } = req.params
 
+    try{
+        const customers = await db.query("SELECT * FROM customers WHERE customers.id = $1",[id]);
+        if(customers.rowCount){
+            res.send(customers.rows[0]);      
+        }else{
+            res.status(404).send("Cliente não encontrado")
+        }
     }catch(error){
         res.status(500).send(error.message);
     }
 }
 
 export async function createNewCustomers (req,res) {
-    //const { name, image, stockTotal, pricePerDay } = req.body;
+    const { name, phone, cpf, birthday } = req.body;
+    
     
 /*     if(!name || !image || !stockTotal || !pricePerDay){
         return res.status(400);
