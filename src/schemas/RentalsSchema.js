@@ -1,6 +1,6 @@
 import joi from "joi";
 
-export const rentals = joi.object({
+export const rentalsSchema = joi.object({
     customerId: joi.number().required(),
     gameId: joi.number().required(),
     daysRented: joi.number().positive().required(),

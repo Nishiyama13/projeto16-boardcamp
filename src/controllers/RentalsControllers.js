@@ -1,0 +1,1 @@
+//findAllRentals, createNewRentals, returnRentals, deleteRentals
