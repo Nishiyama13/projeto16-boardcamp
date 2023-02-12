@@ -13,6 +13,10 @@ import dayjs from "dayjs"
 } */
 
 export async function createNewRentals (req,res){
+    if(req.path !== "/rentals"){
+        return res.status(404).send("Endpoint não encontrado");
+    }
+    
     const { customerId, gameId, daysRented } = req.body;
 
     const rentalDate = dayjs(Date.now()).format("YYYY-MM-DD");
