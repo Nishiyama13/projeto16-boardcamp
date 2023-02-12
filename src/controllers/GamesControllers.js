@@ -12,10 +12,6 @@ export async function findAllGames (req,res) {
 
 export async function createNewGame (req,res) {
     const { name, image, stockTotal, pricePerDay } = req.body;
-    
-    if(!name || !image || !stockTotal || !pricePerDay){
-        return res.status(400);
-    }
 
     try{
         

@@ -30,11 +30,6 @@ export async function createNewCustomers (req,res) {
     const { name, phone, cpf, birthday } = req.body;
 
     try{
-/*         const {error} = customersSchema.validate({ name, phone, cpf, birthday });
-        if(error){
-            res.status(400).send(error.details[0].message);
-            return;
-        } */
 
         const checkExistingCpf = await db.query('SELECT * FROM customers WHERE cpf = $1', [cpf]);
         if(checkExistingCpf.rowCount > 0){
