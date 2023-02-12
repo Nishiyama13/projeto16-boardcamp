@@ -12,8 +12,9 @@ export async function findAllGames (req,res) {
 
 export async function createNewGame (req,res) {
     const { name, image, stockTotal, pricePerDay } = req.body;
-    if(!name || !image || !stockTotal || !pricePerDay){
-        return res.status(400).send("Os campos obrigatórios devem ser preenchidos")
+    
+    if(!name || stockTotal > 0 || pricePerDay > 0){
+        return res.status(400).send("O nome do jogo deve ser preenchido e valores maiores que 0");
     }
 
     try{
