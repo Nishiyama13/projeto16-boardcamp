@@ -1,5 +1,4 @@
 import { db } from "../config/database.connection.js";
-//import { customersSchema } from "../schemas/CustomersSchema.js";
 
 export async function findAllCustomers (req,res) {
     try{
