@@ -55,26 +55,24 @@ export async function updateCustomers (req,res){
        const checkExistingCustomer = await db.query("SELECT * FROM customers WHERE id = $1", [id]);
 
        if(checkExistingCustomer){       
-        const customerCpf = checkExistingCustomer.rows[0].cpf;
+            const customerCpf = checkExistingCustomer.rows[0].cpf;
        
-        if(cpf !== customerCpf){
-            const cpfExists = await db.query("SELECT * FROM customers WHERE cpf = $1",[cpf]); 
-            if(cpfExists.rowCount > 0){
-                res.status(409).send("CPF cadastrado com outro Usuário");
-                return;
+            if(cpf !== customerCpf){
+                const cpfExists = await db.query("SELECT * FROM customers WHERE cpf = $1",[cpf]); 
+                if(cpfExists.rowCount > 0){
+                    res.status(409).send("CPF cadastrado com outro Usuário");
+                    return;
+                }
             }
-        }
-        await db.query(
+            await db.query(
             "UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 WHERE id = $5 RETURNING*",[name, phone, cpf, birthday, id]
             );
             res.status(200).send("Os dados foram atualizados");
         
-       }else{
-        res.status(404).send("Cliente não encontrado");
-        return;
-            }
-
-
+        }else{
+            res.status(404).send("Cliente não encontrado");
+            return;
+        }
 
     }catch(error){
         console.log(error);
