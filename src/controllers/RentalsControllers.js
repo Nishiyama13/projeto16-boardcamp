@@ -35,7 +35,7 @@ export async function findAllRentals (req,res) {
     }
 }  
 
-//faz a busca por id do cliente
+//faz a busca de todos os aluguéis por id do cliente
 /* export async function findAllRentals (req,res) {
     try{
         let customerId = req.params.customerId;
@@ -105,45 +105,96 @@ export async function createNewRentals (req,res){
         res.status(201).send("Aluguél criado");
 
     }catch(error){
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
 }
 
 export async function returnRentals (req,res){
     const { id } = req.params;
+    const returnDate = new Date();
+    const formatReturnDate = dayjs(returnDate).format("YYYY-MM-DD");
     
     try{
-        const rental = await db.query("SELECT * FROM rentals WHERE id = $1",[id]);
+        const {rows} = await db.query("SELECT * FROM rentals WHERE id = $1",[id]);
+        const rental = rows[0];
 
-        if(rental.rowCount === 0){
-            return res.status(404).send();
+        if(!rental){
+            return res.status(404).send("Aluguél não existente");
         }
 
-        if(rental.rows[0].returnDate !== null){
-
-            return res.status(400).send()
+        if(rental.returnDate !== null){
+            return res.status(400).send("Aluguél já finalizado")
         }
 
-        const now = dayjs();
+        const { rentDate, daysRented, originalPrice } = rental;
+        const refactoredRentDate = new Date(rentDate);
+        const daysDelayed = Math.max(dayjs(returnDate).diff(refactoredRentDate, 'day') - daysRented, 0);
+        const delayFee = daysDelayed * (originalPrice / daysRented);
+
+        const updateQuery = delayFee < 0 ?
+        "UPDATE rentals SET returnDate = $1 WHERE id = $2 RETURNING *" : 
+        "UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3 RETURNING *";
+
+        const updateParams = delayFee < 0 ?
+        [formatReturnDate, id] :
+        [formatReturnDate, delayFee, id];
+
+        const { rowCount } = await db.query(updateQuery, updateParams);
+
+        if( rowCount === 0){
+            return res.status(404).send("Alugué não existente");
+        }
+
+
+        return res.status(200).send("Aluguél finalizado com sucesso")
+
+
+/*         const now = dayjs();
         const rentDate = dayjs(rental.rows[0].rentDate);
         const daysRented = rental.rows[0].daysRented;
         const pricePerDay = rental.rows[0].pricePerDay;
-        const lateDays = Math.max(now.diff(rentDate, 'day') - daysRented,0);
-        const delayFee = lateDays * pricePerDay;
+        const daysDelayed = Math.max(now.diff(rentDate, 'day') - daysRented,0);
+        const delayFee = daysDelayed * pricePerDay;
 
-        await db.query("UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3", [now.toISOString(), delayFee, id]);
+        const query = delayFee < 0 ? "UPDATE rentals SET returnDate = $1 WHERE id = $2 RETURNING *" : "UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3 RETURNING *";
 
-        return res.status(200).send("modificado");
+        const params = delayFee < 0? [returnDate, id] : [returnDate, delayFee, id];
+
+        const updateRental = await db.query(query,params);
+
+        if(updateRental.rowCount === 0){
+            throw new Error("Falhou")
+        }
+
+        return res.status(200).send("Aluguém finalizado"); */
 
     }catch(error){
         return res.status(500).send(error.message);
     }
 }
 
-/* export async function deleteRentals (req,res){
+export async function deleteRentals (req,res){
+
+    const { id } = req.params; 
     try{
+        const rental = await db.query('SELECT *FROM rentals WHERE "id" = $1', [id]);
+
+        if(rental.rowCount === 0){
+            return res.status(404).send("Aluguél não existente");
+        }
+
+        if(rental.rows[0].returnDate === null){
+            return res.status(400).send("Aluguél ainda não foi finalizado.");
+        }
+
+        await db.query('DELETE FROM rentals WHERE "id"=$1', [id]);
+        return res.status(200).send("Aluguél foi excluído");
 
     }catch(error){
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
-} */
+} 
+
+
+
+
