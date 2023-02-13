@@ -4,6 +4,39 @@ import dayjs from "dayjs"
 
 export async function findAllRentals (req,res) {
     try{
+
+        let query = `SELECT 
+        rentals.id, 
+        rentals."customerId",
+        rentals."gameId",  
+        rentals."rentDate",
+        rentals."daysRented", 
+        rentals."returnDate", 
+        rentals."originalPrice", 
+        rentals."delayFee", 
+        json_build_object(
+            'id',customers.id,
+            'name',customers.name
+            ) as "customer",
+        json_build_object(
+            'id', games.id, 
+            'name', games.name
+        ) as "game" 
+        FROM rentals 
+        JOIN customers ON rentals."customerId" = customers.id 
+        JOIN games ON rentals."gameId" = games.id`;
+
+        const rentals = await db.query(query);
+        
+        return res.status(200).send(rentals.rows);
+
+    }catch(error){
+        return res.status(500).send(error.message);
+    }
+}  
+
+/* export async function findAllRentals (req,res) {
+    try{
         let customerId = req.params.customerId;
 
         let query = `SELECT 
@@ -39,7 +72,7 @@ export async function findAllRentals (req,res) {
     }catch(error){
         return res.status(500).send(error.message);
     }
-}  
+}   */
 
 export async function createNewRentals (req,res){
 
@@ -75,7 +108,9 @@ export async function createNewRentals (req,res){
     }
 }
 
-/* export async function returnRentals (req,res){
+export async function returnRentals (req,res){
+    const { id } = req.params;
+    
     try{
 
     }catch(error){
@@ -83,7 +118,7 @@ export async function createNewRentals (req,res){
     }
 }
 
-export async function deleteRentals (req,res){
+/* export async function deleteRentals (req,res){
     try{
 
     }catch(error){
