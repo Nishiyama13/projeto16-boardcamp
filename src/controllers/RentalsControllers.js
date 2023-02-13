@@ -8,7 +8,8 @@ export async function findAllRentals (req,res) {
 
         let query = `SELECT 
         rentals.id, 
-        rentals."customerId", 
+        rentals."customerId",
+        rentals."gameId",  
         rentals."rentDate",
         rentals."daysRented", 
         rentals."returnDate", 
