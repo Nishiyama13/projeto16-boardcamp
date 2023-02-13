@@ -2,21 +2,33 @@
 import { db } from "../config/database.connection.js"
 import dayjs from "dayjs"
 
-/*  export async function findAllRentals (req,res) {
+export async function findAllRentals (req,res) {
     try{
-        const rentals = await db.query("SELECT * FROM rentals");
-        res.send(rentals.rows);
+        const rentals = await db.query(`SELECT 
+        rentals.id, 
+        rentals."customerId", 
+        rentals."rentDate",
+        rentals."daysRented", 
+        rentals."returnDate", 
+        rentals."originalPrice", 
+        rentals."delayFee", 
+        json_build_object('id',customers.id,'name',customers.name) as "customer", json_build_object('id', games.id, 'name', games.name) as "game" 
+        FROM rentals 
+        JOIN customers ON rentals."customerId" = customers.id 
+        JOIN games ON rentals."gameId" = games.id `);
+        
+        return res.status(200).send(rentals.rows);
 
     }catch(error){
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
-}  */
+}  
 
 export async function createNewRentals (req,res){
 
     const { customerId, gameId, daysRented } = req.body;
 
-    const rentalDate = dayjs(Date.now()).format("YYYY-MM-DD");
+    const rentDate = dayjs(Date.now()).format("YYYY-MM-DD");
 
     try{
         const customer = await db.query('SELECT * FROM customers WHERE id = $1',[customerId]);
@@ -37,7 +49,7 @@ export async function createNewRentals (req,res){
             res.status(400).send('Sem exemplar em estoque');
         }
 
-        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [customerId, gameId, rentalDate, daysRented, null, originalPrice, null]);
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [customerId, gameId, rentDate, daysRented, null, originalPrice, null]);
 
         res.status(201).send("Aluguél criado");
 
