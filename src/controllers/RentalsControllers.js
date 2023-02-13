@@ -4,7 +4,9 @@ import dayjs from "dayjs"
 
 export async function findAllRentals (req,res) {
     try{
-        const rentals = await db.query(`SELECT 
+        let customerId = req.params.customerId;
+
+        let query = `SELECT 
         rentals.id, 
         rentals."customerId", 
         rentals."rentDate",
@@ -12,10 +14,24 @@ export async function findAllRentals (req,res) {
         rentals."returnDate", 
         rentals."originalPrice", 
         rentals."delayFee", 
-        json_build_object('id',customers.id,'name',customers.name) as "customer", json_build_object('id', games.id, 'name', games.name) as "game" 
+        json_build_object(
+            'id',customers.id,
+            'name',customers.name
+            ) as "customer",
+        json_build_object(
+            'id', games.id, 
+            'name', games.name
+        ) as "game" 
         FROM rentals 
         JOIN customers ON rentals."customerId" = customers.id 
-        JOIN games ON rentals."gameId" = games.id `);
+        JOIN games ON rentals."gameId" = games.id`;
+
+        if(req.query.customerId){
+            customerId = req.query.customerId;
+            query += ` WHERE rentals."customerId" = $1`;
+        }
+
+        const rentals = await db.query(query, [customerId]);
         
         return res.status(200).send(rentals.rows);
 
