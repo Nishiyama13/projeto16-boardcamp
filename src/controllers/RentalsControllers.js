@@ -35,6 +35,7 @@ export async function findAllRentals (req,res) {
     }
 }  
 
+//faz a busca por id do cliente
 /* export async function findAllRentals (req,res) {
     try{
         let customerId = req.params.customerId;
@@ -112,9 +113,30 @@ export async function returnRentals (req,res){
     const { id } = req.params;
     
     try{
+        const rental = await db.query("SELECT * FROM rentals WHERE id = $1",[id]);
+
+        if(rental.rowCount === 0){
+            return res.status(404).send();
+        }
+
+        if(rental.rows[0].returnDate !== null){
+
+            return res.status(400).send()
+        }
+
+        const now = dayjs();
+        const rentDate = dayjs(rental.rows[0].rentDate);
+        const daysRented = rental.rows[0].daysRented;
+        const pricePerDay = rental.rows[0].pricePerDay;
+        const lateDays = Math.max(now.diff(rentDate, 'day') - daysRented,0);
+        const delayFee = lateDays * pricePerDay;
+
+        await db.query("UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3", [now.toISOString(), delayFee, id]);
+
+        return res.status(200).send("modificado");
 
     }catch(error){
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
 }
 
