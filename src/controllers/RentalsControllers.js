@@ -111,12 +111,11 @@ export async function createNewRentals (req,res){
 
 export async function returnRentals (req,res){
     const { id } = req.params;
+    const returnDay = dayjs().format("YYYY-MM-DD");
     const returnDate = new Date();
-    const formatReturnDate = dayjs(returnDate).format("YYYY-MM-DD");
     
     try{
-        const {rows} = await db.query("SELECT * FROM rentals WHERE id = $1",[id]);
-        const rental = rows[0];
+        const {rows: [rental]} = await db.query("SELECT * FROM rentals WHERE id = $1",[id]);
 
         if(!rental){
             return res.status(404).send("Aluguél não existente");
@@ -126,18 +125,18 @@ export async function returnRentals (req,res){
             return res.status(400).send("Aluguél já finalizado")
         }
 
-        const { rentDate, daysRented, originalPrice } = rental;
-        const refactoredRentDate = new Date(rentDate);
-        const daysDelayed = Math.max(dayjs(returnDate).diff(refactoredRentDate, 'day') - daysRented, 0);
+        const { rentDate, daysRented, originalPrice, customerId, gameId } = rental;
+        const rentDateObj = new Date(rentDate);
+        const daysDelayed = Math.max(dayjs(returnDate).diff(rentDateObj, 'day') - daysRented, 0);
         const delayFee = daysDelayed * (originalPrice / daysRented);
 
-        const updateQuery = delayFee < 0 ?
-        "UPDATE rentals SET returnDate = $1 WHERE id = $2 RETURNING *" : 
-        "UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3 RETURNING *";
+        const updateQuery = delayFee < 0 
+        ? 'UPDATE rentals SET "returnDate" = $1 WHERE id = $2 RETURNING *' 
+        : 'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3 RETURNING *';
 
         const updateParams = delayFee < 0 ?
-        [formatReturnDate, id] :
-        [formatReturnDate, delayFee, id];
+        [returnDay, id] :
+        [returnDay, delayFee, id];
 
         const { rowCount } = await db.query(updateQuery, updateParams);
 
@@ -147,26 +146,6 @@ export async function returnRentals (req,res){
 
 
         return res.status(200).send("Aluguél finalizado com sucesso")
-
-
-/*         const now = dayjs();
-        const rentDate = dayjs(rental.rows[0].rentDate);
-        const daysRented = rental.rows[0].daysRented;
-        const pricePerDay = rental.rows[0].pricePerDay;
-        const daysDelayed = Math.max(now.diff(rentDate, 'day') - daysRented,0);
-        const delayFee = daysDelayed * pricePerDay;
-
-        const query = delayFee < 0 ? "UPDATE rentals SET returnDate = $1 WHERE id = $2 RETURNING *" : "UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3 RETURNING *";
-
-        const params = delayFee < 0? [returnDate, id] : [returnDate, delayFee, id];
-
-        const updateRental = await db.query(query,params);
-
-        if(updateRental.rowCount === 0){
-            throw new Error("Falhou")
-        }
-
-        return res.status(200).send("Aluguém finalizado"); */
 
     }catch(error){
         return res.status(500).send(error.message);
