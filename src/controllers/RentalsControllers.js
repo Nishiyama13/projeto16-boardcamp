@@ -13,9 +13,6 @@ import dayjs from "dayjs"
 }  */
 
 export async function createNewRentals (req,res){
-    if(req.path !== "/rentals"){
-        return res.status(400).send("Endpoint não encontrado");
-    }
 
     const { customerId, gameId, daysRented } = req.body;
 
@@ -25,14 +22,14 @@ export async function createNewRentals (req,res){
         const customer = await db.query('SELECT * FROM customers WHERE id = $1',[customerId]);
 
         const game = await db.query('SELECT * FROM games WHERE id=$1', [gameId]);
-        
+
         if(customer.rowCount === 0 || game.rowCount === 0){
             res.status(400).send("Cliente ou jogo não existe")
         }
 
         const { pricePerDay } = game.rows[0];
         const originalPrice = pricePerDay * daysRented;
-        const rentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL`,[gameId]);
+        const rentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`,[gameId]);
 
         const stock = await db.query(`SELECT "stockTotal" FROM games WHERE id = $1`,[gameId]);
 
